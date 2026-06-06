@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a237e">
 <title>Math Games by Sana Yuvanesan</title>
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -50,6 +52,9 @@
   .by-sana { font-family: 'Fredoka One', cursive; font-size: 18px; color: #fff; background: rgba(245,166,35,0.2); border: 1.5px solid rgba(245,166,35,0.4); border-radius: 30px; padding: 6px 20px; margin-top: 4px; }
 
   .home-buttons { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; z-index: 1; margin-top: 28px; }
+
+  /* HIGH SCORE BADGE on home */
+  .highscore-badge { font-size: 13px; color: rgba(255,255,255,0.65); background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.25); border-radius: 20px; padding: 5px 16px; margin-top: 2px; z-index:1; }
 
   .btn { border: none; cursor: pointer; font-family: 'Fredoka One', cursive; font-size: 22px; border-radius: var(--radius); padding: 16px 24px; transition: all 0.2s; text-align: center; letter-spacing: 1px; width: 100%; }
   .btn:active { transform: scale(0.96); }
@@ -121,8 +126,15 @@
   .heart.lost { opacity: 0.25; transform: scale(0.8); }
   .score-badge { font-family: 'Fredoka One', cursive; font-size: 20px; color: var(--gold); background: rgba(245,166,35,0.15); border: 1.5px solid rgba(245,166,35,0.35); border-radius: 14px; padding: 4px 14px; }
 
-  .progress-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.12); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+  .progress-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.12); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
   .progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #f5a623, #ff6b6b); transition: width 0.5s ease; }
+
+  /* TIMER */
+  .timer-row { width: 100%; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .timer-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.12); border-radius: 8px; overflow: hidden; }
+  .timer-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #4caf50, #f5a623); transition: width 0.1s linear, background 0.3s; }
+  .timer-fill.urgent { background: linear-gradient(90deg, #ef5350, #ff6b6b); }
+  .timer-label { font-family: 'Fredoka One', cursive; font-size: 16px; color: #fff; min-width: 28px; text-align: right; }
 
   /* GAME CANVAS */
   #game-canvas { width: 100%; max-width: 380px; border-radius: 20px; overflow: hidden; position: relative; margin-bottom: 16px; }
@@ -131,14 +143,15 @@
   /* QUESTION CARD */
   .question-card { background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.18); border-radius: 22px; width: 100%; padding: 22px 18px; text-align: center; margin-bottom: 14px; }
   .q-num { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
-  .question-text { font-family: 'Fredoka One', cursive; font-size: 34px; color: #fff; line-height: 1.2; }
+  .question-text { font-family: 'Fredoka One', cursive; font-size: 34px; color: #fff; line-height: 1.2; white-space: pre-line; }
 
   /* OPTIONS */
   .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-  .option-btn { font-family: 'Fredoka One', cursive; font-size: 22px; padding: 18px 10px; border-radius: 18px; border: 2.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; cursor: pointer; transition: all 0.2s; }
+  .option-btn { font-family: 'Fredoka One', cursive; font-size: 22px; padding: 18px 10px; border-radius: 18px; border: 2.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; cursor: pointer; transition: all 0.2s; position: relative; }
   .option-btn:hover:not(:disabled) { background: rgba(255,255,255,0.18); border-color: var(--gold); transform: scale(1.04); }
   .option-btn.correct { background: linear-gradient(135deg, #2e7d32, #43a047) !important; border-color: #a5d6a7 !important; transform: scale(1.06); animation: pop 0.3s ease; }
   .option-btn.wrong { background: linear-gradient(135deg, #b71c1c, #e53935) !important; border-color: #ef9a9a !important; animation: shake 0.4s ease; }
+  .option-btn .key-hint { position: absolute; top: 5px; right: 8px; font-size: 11px; opacity: 0.45; font-family: 'Nunito', sans-serif; font-weight: 700; }
   @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.12)} 100%{transform:scale(1.06)} }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
 
@@ -160,8 +173,11 @@
   .stat-label { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 2px; }
   .result-btns { display: flex; flex-direction: column; gap: 10px; }
 
+  /* BEST SCORE BANNER */
+  .best-score-banner { font-size: 13px; color: var(--gold); background: rgba(245,166,35,0.12); border: 1px solid rgba(245,166,35,0.3); border-radius: 12px; padding: 6px 14px; margin-bottom: 14px; display: none; }
+
   /* FLOATING PARTICLES */
-  .particle { position: absolute; pointer-events: none; font-size: 20px; animation: floatUp 1.2s ease forwards; z-index: 100; }
+  .particle { position: fixed; pointer-events: none; font-size: 20px; animation: floatUp 1.2s ease forwards; z-index: 100; }
   @keyframes floatUp { 0%{transform:translateY(0) scale(1);opacity:1} 100%{transform:translateY(-80px) scale(0.3);opacity:0} }
 
   /* BACK BTN */
@@ -169,7 +185,7 @@
   .back-btn:hover { background: rgba(255,255,255,0.15); }
 
   /* FEEDBACK TOAST */
-  #feedback-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); z-index: 999; font-family: 'Fredoka One', cursive; font-size: 22px; padding: 12px 28px; border-radius: 50px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; }
+  #feedback-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); z-index: 999; font-family: 'Fredoka One', cursive; font-size: 22px; padding: 12px 28px; border-radius: 50px; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; text-align: center; }
   #feedback-toast.show { transform: translateX(-50%) translateY(0); }
   #feedback-toast.correct { background: #2e7d32; color: #a5d6a7; box-shadow: 0 6px 24px rgba(46,125,50,0.4); }
   #feedback-toast.wrong { background: #b71c1c; color: #ef9a9a; box-shadow: 0 6px 24px rgba(183,28,28,0.4); }
@@ -196,6 +212,7 @@
     <div class="game-title">Math Games</div>
     <div class="game-subtitle">Learn • Play • Win</div>
     <div class="by-sana">by Sana Yuvanesan ✨</div>
+    <div class="highscore-badge" id="home-highscore"></div>
   </div>
   <div class="home-buttons">
     <button class="btn btn-primary" onclick="showScreen('theme-select')">▶ Play Now</button>
@@ -213,7 +230,9 @@
       📚 <strong>Pick a chapter</strong> — Add, Subtract, Multiply, Divide, or Numbers<br>
       ⚡ <strong>Pick difficulty</strong> — Easy, Medium, or Hard<br>
       ❤️ <strong>You get 3 lives</strong> — wrong answers lose a life!<br>
+      ⏱️ <strong>Beat the timer</strong> — each question has a countdown!<br>
       🎯 <strong>5 questions</strong> with 4 choices each<br>
+      ⌨️ <strong>Press 1–4</strong> on your keyboard to answer fast!<br>
       🚀 In Space theme — your rocket catches stars for correct answers!<br>
       🧜 In Ocean theme — your mermaid catches fish for correct answers!<br>
       ⭐ <strong>Catch 3 out of 5</strong> to win the round!
@@ -297,6 +316,10 @@
       <div class="score-badge">⭐ <span id="score-count">0</span>/5</div>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="timer-row">
+      <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+      <div class="timer-label" id="timer-label">15</div>
+    </div>
     <div id="game-canvas"><canvas id="game-anim" width="380" height="200"></canvas></div>
     <div class="question-card">
       <div class="q-num" id="q-num">Question 1 of 5</div>
@@ -312,6 +335,7 @@
     <div class="result-emoji" id="result-emoji">🏆</div>
     <div class="result-title" id="result-title">Awesome!</div>
     <div class="result-subtitle" id="result-subtitle"></div>
+    <div class="best-score-banner" id="best-score-banner">🏅 New Best Score!</div>
     <div class="score-display" id="result-stars"></div>
     <div class="stats-row">
       <div class="stat-box"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">Correct ✅</div></div>
@@ -327,6 +351,68 @@
 </div>
 
 <script>
+// ============ AUDIO ============
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, vol = 0.3) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+
+function playCorrect() {
+  playTone(523, 'sine', 0.1, 0.25);
+  setTimeout(() => playTone(659, 'sine', 0.1, 0.25), 100);
+  setTimeout(() => playTone(784, 'sine', 0.18, 0.3), 200);
+}
+
+function playWrong() {
+  playTone(220, 'sawtooth', 0.18, 0.2);
+  setTimeout(() => playTone(180, 'sawtooth', 0.22, 0.2), 150);
+}
+
+function playTimerUrgent() {
+  playTone(440, 'square', 0.06, 0.08);
+}
+
+// ============ HIGH SCORE ============
+function getHighScore(chapter, difficulty) {
+  return parseInt(localStorage.getItem(`hs_${chapter}_${difficulty}`) || '0');
+}
+function setHighScore(chapter, difficulty, score) {
+  localStorage.setItem(`hs_${chapter}_${difficulty}`, score);
+}
+function updateHomeHighScore() {
+  const el = document.getElementById('home-highscore');
+  const keys = ['numbers','addition','subtraction','multiplication','division'];
+  const diffs = ['easy','medium','hard'];
+  let best = 0, bestKey = '';
+  keys.forEach(k => diffs.forEach(d => {
+    const s = getHighScore(k, d);
+    if (s > best) { best = s; bestKey = `${k} (${d})`; }
+  }));
+  if (best > 0) {
+    el.textContent = `🏅 Best: ${best}/5 — ${bestKey}`;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
 // ============ GAME STATE ============
 let gameState = {
   theme: 'space',
@@ -336,6 +422,7 @@ let gameState = {
   current: 0,
   score: 0,
   lives: 3,
+  wrong: 0,
   answered: false
 };
 
@@ -362,33 +449,102 @@ const chapterInfo = {
   }
 };
 
+// ============ TIMER ============
+let timerInterval = null;
+let timerSeconds = 15;
+const TIMER_DURATION = { easy: 20, medium: 15, hard: 10 };
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerSeconds = TIMER_DURATION[gameState.difficulty];
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerUI();
+    if (timerSeconds <= 3) playTimerUrgent();
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      if (!gameState.answered) timeOut();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function updateTimerUI() {
+  const total = TIMER_DURATION[gameState.difficulty];
+  const pct = (timerSeconds / total) * 100;
+  const fill = document.getElementById('timer-fill');
+  const label = document.getElementById('timer-label');
+  fill.style.width = pct + '%';
+  fill.className = 'timer-fill' + (timerSeconds <= 5 ? ' urgent' : '');
+  label.textContent = timerSeconds;
+}
+
+function timeOut() {
+  if (gameState.answered) return;
+  gameState.answered = true;
+  gameState.lives--;
+  gameState.wrong++;
+  playWrong();
+
+  const q = gameState.questions[gameState.current];
+  document.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent == q.answer) b.classList.add('correct');
+  });
+  showToast(`⏱️ Time's up! Answer: ${q.answer}`, 'wrong');
+
+  const hearts = document.querySelectorAll('.heart');
+  hearts.forEach((h, i) => {
+    h.className = 'heart' + (i >= gameState.lives ? ' lost' : '');
+  });
+
+  if (gameState.lives <= 0) {
+    setTimeout(showResult, 1200);
+    return;
+  }
+  setTimeout(() => {
+    gameState.current++;
+    if (gameState.current >= 5) showResult();
+    else renderQuestion();
+  }, 1200);
+}
+
 // ============ QUESTION GENERATORS ============
 function generateQ(chapter, difficulty) {
   let q = {};
-  const ranges = {
-    easy: [1, 10], medium: [1, 50], hard: [1, 200]
-  };
+  const ranges = { easy: [1, 10], medium: [1, 50], hard: [1, 200] };
   const [min, max] = ranges[difficulty];
-
   const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 
   if (chapter === 'numbers') {
-    const nums = [rand(min, max), rand(min, max), rand(min, max), rand(min, max)].sort((a, b) => a - b);
-    const types = ['biggest', 'smallest', 'middle'];
+    const types = ['biggest', 'smallest', 'pattern'];
     const type = types[rand(0, 2)];
-    if (type === 'biggest') {
-      q.text = `Which is the biggest?`;
-      q.answer = Math.max(...nums);
-      q.options = [...new Set(nums)].slice(0, 4);
-    } else if (type === 'smallest') {
-      q.text = `Which is the smallest?`;
-      q.answer = Math.min(...nums);
-      q.options = [...new Set(nums)].slice(0, 4);
+    if (type === 'biggest' || type === 'smallest') {
+      // Generate 4 clearly distinct numbers
+      const answer = rand(min, max);
+      const distractors = new Set();
+      while (distractors.size < 3) {
+        const offset = rand(1, Math.max(3, Math.floor((max - min) / 4)));
+        const candidate = type === 'biggest'
+          ? answer - (distractors.size + 1) * offset
+          : answer + (distractors.size + 1) * offset;
+        if (candidate > 0 && candidate !== answer) distractors.add(candidate);
+      }
+      q.text = type === 'biggest' ? `Which is the biggest?` : `Which is the smallest?`;
+      q.answer = answer;
+      q.options = [answer, ...[...distractors]];
     } else {
-      const a = rand(min, max), skip = rand(1, 5);
+      // Pattern — scale skip with difficulty
+      const skipMax = difficulty === 'easy' ? 5 : difficulty === 'medium' ? 20 : 50;
+      const a = rand(min, max), skip = rand(2, skipMax);
       q.text = `What comes next in the pattern?\n${a}, ${a + skip}, ${a + skip * 2}, ___`;
       q.answer = a + skip * 3;
-      q.options = [q.answer, q.answer + rand(1,3), q.answer - rand(1,3), q.answer + rand(4,7)];
+      q.options = [q.answer, q.answer + rand(1, skip), q.answer - rand(1, skip), q.answer + rand(skip + 1, skip * 2)];
     }
   } else if (chapter === 'addition') {
     const a = rand(min, max), b = rand(min, max);
@@ -418,18 +574,21 @@ function generateQ(chapter, difficulty) {
     q.options = [q.answer, q.answer + rand(1,3), Math.max(1, q.answer - rand(1,2)), q.answer + rand(4,7)];
   }
 
-  // Shuffle options ensuring answer is in there, dedupe
+  // Dedupe, fill, ensure answer present, shuffle
   let opts = [...new Set(q.options.filter(x => x > 0))];
-  while (opts.length < 4) opts.push(q.answer + opts.length * 2 + 1);
+  while (opts.length < 4) opts.push(q.answer + opts.length * 3 + rand(2, 6));
   opts = opts.slice(0, 4);
   if (!opts.includes(q.answer)) opts[0] = q.answer;
   q.options = opts.sort(() => Math.random() - 0.5);
   return q;
 }
 
-// ============ CANVAS ANIMATION ============
+// ============ CANVAS ANIMATION (30 fps cap) ============
 let canvas, ctx, animState;
 let animFrame;
+let lastFrameTime = 0;
+const TARGET_FPS = 30;
+const FRAME_MS = 1000 / TARGET_FPS;
 
 function initCanvas() {
   canvas = document.getElementById('game-anim');
@@ -447,6 +606,7 @@ function initCanvas() {
   };
   spawnItems();
   if (animFrame) cancelAnimationFrame(animFrame);
+  lastFrameTime = 0;
   drawLoop();
 }
 
@@ -464,15 +624,18 @@ function spawnItems() {
   }
 }
 
-function drawLoop() {
+function drawLoop(timestamp) {
   if (!ctx) return;
+  animFrame = requestAnimationFrame(drawLoop);
+  if (timestamp - lastFrameTime < FRAME_MS) return;
+  lastFrameTime = timestamp;
+
   animState.t += 0.04;
   ctx.clearRect(0, 0, 380, 200);
   drawBackground();
   drawItems();
   drawHero();
   drawParticles();
-  animFrame = requestAnimationFrame(drawLoop);
 }
 
 function drawBackground() {
@@ -482,7 +645,6 @@ function drawBackground() {
     grad.addColorStop(1, '#0a0a2e');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 380, 200);
-    // tiny stars
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
     for (let i = 0; i < 40; i++) {
       const sx = (i * 97 + 13) % 380;
@@ -492,19 +654,16 @@ function drawBackground() {
       ctx.fillRect(sx, sy, 1.5, 1.5);
     }
     ctx.globalAlpha = 1;
-    // planets
     ctx.fillStyle = 'rgba(100,80,200,0.2)';
     ctx.beginPath(); ctx.arc(320, 30, 18, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = 'rgba(80,60,160,0.3)';
     ctx.beginPath(); ctx.ellipse(320, 30, 28, 7, 0.4, 0, Math.PI*2); ctx.stroke();
   } else {
-    // Ocean
     const grad = ctx.createLinearGradient(0, 0, 0, 200);
     grad.addColorStop(0, '#003366');
     grad.addColorStop(1, '#001a3d');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 380, 200);
-    // bubbles
     for (let i = 0; i < 12; i++) {
       const bx = (i * 43 + 20) % 360;
       const by = ((animState.t * 30 + i * 30) % 220) - 20;
@@ -512,10 +671,8 @@ function drawBackground() {
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.arc(bx, by, 3 + (i % 3), 0, Math.PI*2); ctx.stroke();
     }
-    // seabed hint
     ctx.fillStyle = 'rgba(0,50,80,0.4)';
     ctx.fillRect(0, 175, 380, 25);
-    // seaweed
     for (let i = 0; i < 6; i++) {
       const wx = 30 + i * 60;
       ctx.strokeStyle = 'rgba(0,150,80,0.5)';
@@ -538,10 +695,8 @@ function drawItems() {
     const pulse = 1 + Math.sin(animState.t * 2 + item.phase) * 0.08;
     ctx.scale(pulse, pulse);
     if (animState.theme === 'space') {
-      // Star
       drawStar(ctx, 0, 0, 10, 5, item.index < animState.caught ? '#888' : '#f5a623');
     } else {
-      // Fish
       drawFish(ctx, 0, 0, item.index < animState.caught ? '#334' : '#4fc3f7');
     }
     ctx.restore();
@@ -571,18 +726,15 @@ function drawStar(ctx, cx, cy, outerR, innerR, color) {
 
 function drawFish(ctx, cx, cy, color) {
   ctx.fillStyle = color;
-  // body
   ctx.beginPath();
   ctx.ellipse(cx, cy, 14, 8, 0, 0, Math.PI*2);
   ctx.fill();
-  // tail
   ctx.beginPath();
   ctx.moveTo(cx - 14, cy);
   ctx.lineTo(cx - 24, cy - 8);
   ctx.lineTo(cx - 24, cy + 8);
   ctx.closePath();
   ctx.fill();
-  // eye
   ctx.fillStyle = '#fff';
   ctx.beginPath(); ctx.arc(cx + 7, cy - 2, 3, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = '#001';
@@ -599,18 +751,15 @@ function drawFish(ctx, cx, cy, color) {
 }
 
 function drawHero() {
-  // Smooth movement
   animState.heroX += (animState.targetX - animState.heroX) * 0.12;
   animState.heroY += (animState.targetY - animState.heroY) * 0.12;
   const x = animState.heroX, y = animState.heroY;
   const t = animState.t;
 
   if (animState.theme === 'space') {
-    // Rocket
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(Math.sin(t) * 0.08);
-    // flame
     const flameLen = 16 + Math.sin(t * 8) * 5;
     const flameGrad = ctx.createLinearGradient(-8, 20, -8, 20 + flameLen);
     flameGrad.addColorStop(0, '#ff9800');
@@ -620,24 +769,20 @@ function drawHero() {
     ctx.moveTo(-6, 20); ctx.lineTo(6, 20);
     ctx.lineTo(1, 20 + flameLen); ctx.lineTo(-1, 20 + flameLen);
     ctx.closePath(); ctx.fill();
-    // body
     ctx.fillStyle = '#e0e0e0';
     ctx.beginPath();
     ctx.moveTo(0, -22); ctx.quadraticCurveTo(14, -5, 14, 10);
     ctx.lineTo(-14, 10); ctx.quadraticCurveTo(-14, -5, 0, -22);
     ctx.fill();
-    // nose
     ctx.fillStyle = '#ef5350';
     ctx.beginPath();
     ctx.moveTo(0, -22); ctx.quadraticCurveTo(8, -14, 8, -8);
     ctx.lineTo(-8, -8); ctx.quadraticCurveTo(-8, -14, 0, -22);
     ctx.fill();
-    // window
     ctx.fillStyle = '#29b6f6';
     ctx.beginPath(); ctx.arc(0, -2, 5, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = '#fff6'; ctx.lineWidth = 1.5;
     ctx.stroke();
-    // fins
     ctx.fillStyle = '#ef5350';
     ctx.beginPath();
     ctx.moveTo(14, 10); ctx.lineTo(22, 20); ctx.lineTo(14, 18);
@@ -647,11 +792,9 @@ function drawHero() {
     ctx.closePath(); ctx.fill();
     ctx.restore();
   } else {
-    // Mermaid
     ctx.save();
     ctx.translate(x, y);
     const wave = Math.sin(t * 2) * 6;
-    // tail
     ctx.fillStyle = '#26c6da';
     ctx.beginPath();
     ctx.moveTo(-10, 10);
@@ -660,12 +803,10 @@ function drawHero() {
     ctx.lineTo(8, 28); ctx.lineTo(20, 32);
     ctx.quadraticCurveTo(15, 25 + wave, 10, 10);
     ctx.closePath(); ctx.fill();
-    // body
     ctx.fillStyle = '#ffccbc';
     ctx.beginPath();
     ctx.ellipse(0, 0, 10, 14, 0, 0, Math.PI*2);
     ctx.fill();
-    // hair
     ctx.fillStyle = '#f9a825';
     ctx.beginPath();
     ctx.arc(0, -10, 10, 0, Math.PI*2); ctx.fill();
@@ -673,13 +814,11 @@ function drawHero() {
     ctx.moveTo(-10, -10);
     ctx.quadraticCurveTo(-18, 0, -14, 10);
     ctx.lineTo(-8, 8); ctx.closePath(); ctx.fill();
-    // face
     ctx.fillStyle = '#ffccbc';
     ctx.beginPath(); ctx.arc(0, -10, 8, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = '#4a148c';
     ctx.beginPath(); ctx.arc(-3, -11, 1.5, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(3, -11, 1.5, 0, Math.PI*2); ctx.fill();
-    // smile
     ctx.strokeStyle = '#c2185b'; ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.arc(0, -8, 3, 0.2, Math.PI - 0.2);
@@ -704,7 +843,6 @@ function catchItem(correct) {
   const uncaught = animState.items.filter(i => !i.caught);
   if (uncaught.length === 0) return;
   const target = uncaught[0];
-  target.caught = false; // will animate hero moving to it
   animState.targetX = target.x;
   animState.targetY = target.y;
   setTimeout(() => {
@@ -720,11 +858,7 @@ function catchItem(correct) {
         emoji: animState.theme === 'space' ? '⭐' : '🐟'
       });
     }
-    // Return hero to rest position
-    setTimeout(() => {
-      animState.targetX = 60;
-      animState.targetY = 100;
-    }, 600);
+    setTimeout(() => { animState.targetX = 60; animState.targetY = 100; }, 600);
   }, 700);
 }
 
@@ -733,6 +867,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+  if (id === 'home') updateHomeHighScore();
 }
 
 function selectTheme(t) {
@@ -759,6 +894,7 @@ function startQuiz() {
   gameState.current = 0;
   gameState.score = 0;
   gameState.lives = 3;
+  gameState.wrong = 0;
   gameState.answered = false;
 
   showScreen('quiz');
@@ -778,7 +914,6 @@ function renderQuestion() {
   document.getElementById('score-count').textContent = gameState.score;
   document.getElementById('progress-fill').style.width = `${(gameState.current / 5) * 100}%`;
 
-  // Lives
   const livesEl = document.getElementById('lives-display');
   livesEl.innerHTML = '';
   for (let i = 0; i < 3; i++) {
@@ -788,54 +923,59 @@ function renderQuestion() {
     livesEl.appendChild(h);
   }
 
-  // Options
   const grid = document.getElementById('options-grid');
   grid.innerHTML = '';
-  q.options.forEach(opt => {
+  const keyLabels = ['1', '2', '3', '4'];
+  q.options.forEach((opt, idx) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
-    btn.textContent = opt;
+    btn.dataset.index = idx;
+    btn.innerHTML = `${opt}<span class="key-hint">${keyLabels[idx]}</span>`;
     btn.onclick = () => answerQuestion(opt, btn);
     grid.appendChild(btn);
   });
+
+  startTimer();
 }
 
 function answerQuestion(selected, btn) {
   if (gameState.answered) return;
   gameState.answered = true;
+  stopTimer();
 
   const q = gameState.questions[gameState.current];
   const correct = selected == q.answer;
 
   document.querySelectorAll('.option-btn').forEach(b => {
     b.disabled = true;
-    if (parseInt(b.textContent) == q.answer || b.textContent == q.answer) {
-      b.classList.add('correct');
-    }
+    // childNodes[0] is the text node with the number; childNodes[1] is the key-hint span
+    const val = parseFloat(b.childNodes[0] ? b.childNodes[0].textContent : b.textContent);
+    if (val == q.answer) b.classList.add('correct');
   });
 
   if (correct) {
     btn.classList.add('correct');
     gameState.score++;
+    playCorrect();
     showToast('Correct! 🎉', 'correct');
     spawnParticles(btn, '⭐');
     catchItem(true);
   } else {
     btn.classList.add('wrong');
     gameState.lives--;
-    showToast('Oops! Try next one!', 'wrong');
+    gameState.wrong++;
+    playWrong();
+    showToast(`Oops! Answer: ${q.answer} 💡`, 'wrong');
     catchItem(false);
   }
 
   document.getElementById('score-count').textContent = gameState.score;
 
-  // Update lives display
   const hearts = document.querySelectorAll('.heart');
   hearts.forEach((h, i) => {
     h.className = 'heart' + (i >= gameState.lives ? ' lost' : '');
   });
 
-  // Check game over
   if (gameState.lives <= 0) {
     setTimeout(showResult, 1200);
     return;
@@ -843,11 +983,8 @@ function answerQuestion(selected, btn) {
 
   setTimeout(() => {
     gameState.current++;
-    if (gameState.current >= 5) {
-      showResult();
-    } else {
-      renderQuestion();
-    }
+    if (gameState.current >= 5) showResult();
+    else renderQuestion();
   }, 1200);
 }
 
@@ -855,7 +992,7 @@ function showToast(msg, type) {
   const toast = document.getElementById('feedback-toast');
   toast.textContent = msg;
   toast.className = `${type} show`;
-  setTimeout(() => { toast.className = type; }, 1600);
+  setTimeout(() => { toast.className = type; }, 1800);
 }
 
 function spawnParticles(btn, emoji) {
@@ -873,6 +1010,7 @@ function spawnParticles(btn, emoji) {
 }
 
 function showResult() {
+  stopTimer();
   if (animFrame) cancelAnimationFrame(animFrame);
   showScreen('result');
 
@@ -886,12 +1024,21 @@ function showResult() {
   document.getElementById('result-emoji').textContent = resultEmoji;
   document.getElementById('result-title').textContent = resultTitle;
   document.getElementById('result-subtitle').textContent = resultSub;
-  const totalAnswered = gameState.lives <= 0 ? gameState.current + 1 : 5;
   document.getElementById('stat-correct').textContent = s;
-  document.getElementById('stat-wrong').textContent = totalAnswered - s;
+  document.getElementById('stat-wrong').textContent = gameState.wrong;
   document.getElementById('stat-lives').textContent = gameState.lives;
 
-  // Stars
+  // High score check
+  const prev = getHighScore(gameState.chapter, gameState.difficulty);
+  const banner = document.getElementById('best-score-banner');
+  if (s > prev) {
+    setHighScore(gameState.chapter, gameState.difficulty, s);
+    banner.style.display = 'block';
+    banner.textContent = `🏅 New Best: ${s}/5 — ${gameState.chapter} (${gameState.difficulty})!`;
+  } else {
+    banner.style.display = 'none';
+  }
+
   const starsEl = document.getElementById('result-stars');
   starsEl.innerHTML = '';
   for (let i = 0; i < 5; i++) {
@@ -903,8 +1050,18 @@ function showResult() {
   }
 }
 
+// ============ KEYBOARD SUPPORT ============
+document.addEventListener('keydown', (e) => {
+  const quiz = document.getElementById('quiz');
+  if (!quiz.classList.contains('active')) return;
+  const map = { '1': 0, '2': 1, '3': 2, '4': 3 };
+  if (e.key in map) {
+    const btns = document.querySelectorAll('.option-btn:not(:disabled)');
+    if (btns[map[e.key]]) btns[map[e.key]].click();
+  }
+});
+
 // ============ INIT ============
-// Generate background stars for home
 function createStars() {
   const bg = document.getElementById('stars-bg');
   for (let i = 0; i < 60; i++) {
@@ -922,7 +1079,6 @@ function createStars() {
   }
 }
 
-// Try to load uploaded logo, fallback to emoji
 const logoEl = document.getElementById('logo-img');
 logoEl.onerror = () => {
   logoEl.style.display = 'none';
@@ -933,6 +1089,7 @@ logoEl.onerror = () => {
 };
 
 createStars();
+updateHomeHighScore();
 </script>
 </body>
 </html>

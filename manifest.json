@@ -1,0 +1,13 @@
+{
+  "name": "Math Games by Sana Yuvanesan",
+  "short_name": "Math Games",
+  "description": "Fun maths quizzes for kids — Space & Ocean themes!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a237e",
+  "theme_color": "#1a237e",
+  "icons": [
+    { "src": "math_ryst.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "math_ryst.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
