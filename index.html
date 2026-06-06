@@ -794,35 +794,214 @@ function drawHero() {
   } else {
     ctx.save();
     ctx.translate(x, y);
-    const wave = Math.sin(t * 2) * 6;
-    ctx.fillStyle = '#26c6da';
+    const sw = Math.sin(t * 1.8); // swim sway
+
+    // Glow aura
+    const aura = ctx.createRadialGradient(0, 0, 5, 0, 0, 30);
+    aura.addColorStop(0, 'rgba(0,230,200,0.18)');
+    aura.addColorStop(1, 'rgba(0,230,200,0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI*2); ctx.fill();
+
+    // --- TAIL ---
+    // Main tail body (tapers from waist down)
+    const tailGrad = ctx.createLinearGradient(0, 8, 0, 46);
+    tailGrad.addColorStop(0, '#00bcd4');
+    tailGrad.addColorStop(0.5, '#0097a7');
+    tailGrad.addColorStop(1, '#006064');
+    ctx.fillStyle = tailGrad;
     ctx.beginPath();
-    ctx.moveTo(-10, 10);
-    ctx.quadraticCurveTo(-15, 25 + wave, -20, 32);
-    ctx.lineTo(-8, 28); ctx.lineTo(0, 32);
-    ctx.lineTo(8, 28); ctx.lineTo(20, 32);
-    ctx.quadraticCurveTo(15, 25 + wave, 10, 10);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#ffccbc';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 10, 14, 0, 0, Math.PI*2);
+    ctx.moveTo(-9, 8);
+    ctx.bezierCurveTo(-10, 20, -7 + sw * 3, 34, -6 + sw * 4, 44);
+    ctx.lineTo(6 + sw * 4, 44);
+    ctx.bezierCurveTo(7 + sw * 3, 34, 10, 20, 9, 8);
+    ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = '#f9a825';
+
+    // Tail scale shimmer lines
+    ctx.strokeStyle = 'rgba(0,255,230,0.25)';
+    ctx.lineWidth = 0.8;
+    for (let si = 0; si < 4; si++) {
+      const sy = 14 + si * 7;
+      const hw = 7 - si * 0.8;
+      ctx.beginPath();
+      ctx.moveTo(-hw, sy);
+      ctx.quadraticCurveTo(0, sy - 2, hw, sy);
+      ctx.stroke();
+    }
+
+    // Fin lobes (forked tail)
+    ctx.fillStyle = '#00838f';
+    // left lobe
     ctx.beginPath();
-    ctx.arc(0, -10, 10, 0, Math.PI*2); ctx.fill();
+    ctx.moveTo(-6 + sw * 4, 43);
+    ctx.bezierCurveTo(-14 + sw * 5, 46, -22 + sw * 6, 52, -18 + sw * 4, 58);
+    ctx.bezierCurveTo(-12 + sw * 3, 54, -4 + sw * 4, 50, -2 + sw * 4, 46);
+    ctx.closePath();
+    ctx.fill();
+    // right lobe
     ctx.beginPath();
-    ctx.moveTo(-10, -10);
-    ctx.quadraticCurveTo(-18, 0, -14, 10);
-    ctx.lineTo(-8, 8); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#ffccbc';
-    ctx.beginPath(); ctx.arc(0, -10, 8, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#4a148c';
-    ctx.beginPath(); ctx.arc(-3, -11, 1.5, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(3, -11, 1.5, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = '#c2185b'; ctx.lineWidth = 1.2;
+    ctx.moveTo(6 + sw * 4, 43);
+    ctx.bezierCurveTo(14 + sw * 5, 46, 22 + sw * 6, 52, 18 + sw * 4, 58);
+    ctx.bezierCurveTo(12 + sw * 3, 54, 4 + sw * 4, 50, 2 + sw * 4, 46);
+    ctx.closePath();
+    ctx.fill();
+
+    // Fin highlights
+    ctx.strokeStyle = 'rgba(100,255,240,0.4)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(0, -8, 3, 0.2, Math.PI - 0.2);
+    ctx.moveTo(-4 + sw*4, 45);
+    ctx.bezierCurveTo(-10+sw*4, 50, -16+sw*4, 54, -14+sw*4, 57);
     ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(4 + sw*4, 45);
+    ctx.bezierCurveTo(10+sw*4, 50, 16+sw*4, 54, 14+sw*4, 57);
+    ctx.stroke();
+
+    // --- TORSO ---
+    const skinGrad = ctx.createLinearGradient(0, -16, 0, 10);
+    skinGrad.addColorStop(0, '#ffccbc');
+    skinGrad.addColorStop(1, '#ffab91');
+    ctx.fillStyle = skinGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, -2, 9, 13, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Shell top (bikini-style hint)
+    ctx.fillStyle = '#ff8a65';
+    ctx.beginPath();
+    ctx.ellipse(-5, -6, 5, 3, -0.3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(5, -6, 5, 3, 0.3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(-5, -7, 3, 1.5, -0.3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(5, -7, 3, 1.5, 0.3, 0, Math.PI*2);
+    ctx.fill();
+
+    // --- ARMS / SIDE FINS ---
+    ctx.fillStyle = '#ffab91';
+    // left arm
+    ctx.beginPath();
+    ctx.moveTo(-9, -4);
+    ctx.bezierCurveTo(-18, -2, -20, 4, -16, 8);
+    ctx.bezierCurveTo(-13, 6, -11, 2, -9, 4);
+    ctx.closePath();
+    ctx.fill();
+    // right arm
+    ctx.beginPath();
+    ctx.moveTo(9, -4);
+    ctx.bezierCurveTo(18, -2, 20, 4, 16, 8);
+    ctx.bezierCurveTo(13, 6, 11, 2, 9, 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // --- HAIR (behind face — drawn first pass) ---
+    // Long flowing hair
+    ctx.fillStyle = '#f9a825';
+    // back hair mass
+    ctx.beginPath();
+    ctx.arc(0, -20, 12, 0, Math.PI*2);
+    ctx.fill();
+    // left flowing strand
+    ctx.beginPath();
+    ctx.moveTo(-11, -18);
+    ctx.bezierCurveTo(-20 + sw*2, -8, -22 + sw*3, 4, -18 + sw*2, 14);
+    ctx.bezierCurveTo(-14 + sw*2, 10, -12, 0, -10, -10);
+    ctx.closePath();
+    ctx.fill();
+    // right flowing strand
+    ctx.beginPath();
+    ctx.moveTo(11, -18);
+    ctx.bezierCurveTo(20 - sw*2, -8, 20 - sw*3, 6, 16 - sw*2, 14);
+    ctx.bezierCurveTo(12 - sw*2, 10, 10, 0, 10, -10);
+    ctx.closePath();
+    ctx.fill();
+    // Hair shine
+    ctx.strokeStyle = 'rgba(255,230,100,0.5)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-8, -28);
+    ctx.bezierCurveTo(-16+sw*2, -14, -18+sw*3, 0, -16+sw*2, 12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(4, -29);
+    ctx.bezierCurveTo(6, -18, 4, -8, 2, 0);
+    ctx.stroke();
+
+    // --- FACE ---
+    // Head
+    const faceGrad = ctx.createRadialGradient(-2, -22, 2, 0, -20, 10);
+    faceGrad.addColorStop(0, '#ffd5c4');
+    faceGrad.addColorStop(1, '#ffab91');
+    ctx.fillStyle = faceGrad;
+    ctx.beginPath(); ctx.arc(0, -20, 9, 0, Math.PI*2); ctx.fill();
+
+    // Eyes — whites
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.ellipse(-3.5, -21, 3, 3.5, -0.1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(3.5, -21, 3, 3.5, 0.1, 0, Math.PI*2); ctx.fill();
+    // Irises (teal)
+    ctx.fillStyle = '#00897b';
+    ctx.beginPath(); ctx.ellipse(-3.5, -21, 2, 2.5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(3.5, -21, 2, 2.5, 0, 0, Math.PI*2); ctx.fill();
+    // Pupils
+    ctx.fillStyle = '#1a1a2e';
+    ctx.beginPath(); ctx.arc(-3.5, -21, 1.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.5, -21, 1.2, 0, Math.PI*2); ctx.fill();
+    // Eye sparkle
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-2.8, -22, 0.7, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4.2, -22, 0.7, 0, Math.PI*2); ctx.fill();
+    // Eyelashes (top arcs)
+    ctx.strokeStyle = '#5d4037';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.arc(-3.5, -21, 3.2, Math.PI+0.3, -0.3); ctx.stroke();
+    ctx.beginPath(); ctx.arc(3.5, -21, 3.2, Math.PI+0.3, -0.3); ctx.stroke();
+    // Rosy cheeks
+    ctx.fillStyle = 'rgba(255,100,100,0.22)';
+    ctx.beginPath(); ctx.ellipse(-6, -19, 3, 2, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(6, -19, 3, 2, 0, 0, Math.PI*2); ctx.fill();
+    // Nose
+    ctx.fillStyle = 'rgba(200,100,80,0.4)';
+    ctx.beginPath(); ctx.ellipse(0, -18, 1.2, 0.8, 0, 0, Math.PI*2); ctx.fill();
+    // Smile
+    ctx.strokeStyle = '#c2185b';
+    ctx.lineWidth = 1.4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-3.5, -15.5);
+    ctx.bezierCurveTo(-2, -13.5, 2, -13.5, 3.5, -15.5);
+    ctx.stroke();
+
+    // Tiny crown / starfish on head
+    ctx.fillStyle = '#ff8f00';
+    const crownX = 4, crownY = -29;
+    for (let ci = 0; ci < 5; ci++) {
+      const ca = (ci * Math.PI * 2 / 5) - Math.PI/2;
+      const cr = ci % 2 === 0 ? 4 : 2;
+      if (ci === 0) ctx.moveTo(crownX + cr*Math.cos(ca), crownY + cr*Math.sin(ca));
+      else ctx.lineTo(crownX + cr*Math.cos(ca), crownY + cr*Math.sin(ca));
+    }
+    ctx.beginPath();
+    for (let ci = 0; ci < 10; ci++) {
+      const ca = (ci * Math.PI / 5) - Math.PI/2;
+      const cr = ci % 2 === 0 ? 4 : 1.8;
+      if (ci === 0) ctx.moveTo(crownX + cr*Math.cos(ca), crownY + cr*Math.sin(ca));
+      else ctx.lineTo(crownX + cr*Math.cos(ca), crownY + cr*Math.sin(ca));
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#ffca28';
+    ctx.fill();
+    ctx.strokeStyle = '#ff8f00';
+    ctx.lineWidth = 0.6;
+    ctx.stroke();
+
     ctx.restore();
   }
 }
