@@ -696,9 +696,12 @@ function generateQ(chapter,difficulty){
   if(chapter==='numbers'){
     const type=['biggest','smallest','pattern'][rand(0,2)];
     if(type==='biggest'||type==='smallest'){
-      const ans=rand(mn,mx);
+      const spread=Math.max(2,Math.floor((mx-mn)/5));
+      const ans=type==='biggest'?rand(Math.min(mn+spread*3,mx),mx):rand(mn,Math.max(mx-spread*3,mn));
       const dist=new Set();
-      while(dist.size<3){const o=rand(1,Math.max(3,Math.floor((mx-mn)/4)));const c=type==='biggest'?ans-(dist.size+1)*o:ans+(dist.size+1)*o;if(c>0&&c!==ans)dist.add(c);}
+      let tries=0;
+      while(dist.size<3&&tries<200){tries++;const o=rand(1,spread)*(dist.size+1);const c=type==='biggest'?ans-o:ans+o;if(c>0&&c<=mx*2&&c!==ans)dist.add(c);}
+      let fb=1;while(dist.size<3){dist.add(type==='biggest'?ans+fb:Math.max(1,ans-fb));fb++;}
       q.text=type==='biggest'?'Which is the biggest?':'Which is the smallest?';
       q.answer=ans;q.options=[ans,...dist];
     }else{
