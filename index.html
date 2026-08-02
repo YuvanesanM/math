@@ -239,6 +239,39 @@
     .option-btn{font-size:24px;}
     .game-title{font-size:52px;}
   }
+
+  /* FREE PLAY */
+  #freeplay { padding:0; justify-content:flex-start; overflow:hidden; }
+  .fp-topbar { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:rgba(0,0,0,.45); flex-shrink:0; gap:8px; }
+  .fp-title { font-family:'Fredoka One',cursive; font-size:18px; color:var(--gold); flex:1; text-align:center; }
+  .fp-icon-btn { font-size:18px; background:rgba(255,255,255,.1); border:1.5px solid rgba(255,255,255,.18); border-radius:10px; padding:6px 10px; cursor:pointer; color:#fff; flex-shrink:0; }
+  .fp-icon-btn:active { transform:scale(.93); }
+  .fp-canvas-wrap { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:none; position:relative; }
+  #fp-canvas { display:block; touch-action:none; cursor:crosshair; max-width:100%; max-height:100%; }
+  .fp-bottom { background:rgba(0,0,0,.5); flex-shrink:0; padding:8px 10px 16px; }
+  .fp-tabs { display:flex; gap:6px; margin-bottom:8px; }
+  .fp-tab { flex:1; font-family:'Fredoka One',cursive; font-size:13px; border:none; border-radius:10px; padding:7px 4px; cursor:pointer; background:rgba(255,255,255,.1); color:rgba(255,255,255,.55); }
+  .fp-tab.active { background:var(--gold); color:#1a1a1a; }
+  .fp-panel { display:none; }
+  .fp-panel.active { display:block; }
+  .fp-scroll-row { display:flex; gap:7px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+  .fp-scroll-row::-webkit-scrollbar { display:none; }
+  .fp-color-dot { width:32px; height:32px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:all .15s; flex-shrink:0; }
+  .fp-color-dot.sel { border-color:#fff; transform:scale(1.22); box-shadow:0 0 10px rgba(255,255,255,.5); }
+  .fp-shape-btn { font-size:22px; background:rgba(255,255,255,.1); border:2px solid transparent; border-radius:10px; padding:5px 10px; cursor:pointer; flex-shrink:0; line-height:1; }
+  .fp-shape-btn.sel { border-color:var(--gold); background:rgba(245,166,35,.25); }
+  .fp-sizes { display:flex; gap:7px; align-items:center; margin-top:8px; }
+  .fp-size-btn { background:rgba(255,255,255,.1); border:2px solid transparent; border-radius:9px; padding:5px 14px; cursor:pointer; color:#fff; font-family:'Fredoka One',cursive; font-size:14px; }
+  .fp-size-btn.sel { border-color:var(--gold); background:rgba(245,166,35,.2); }
+  .fp-eraser-btn { background:rgba(255,255,255,.1); border:2px solid transparent; border-radius:9px; padding:5px 12px; cursor:pointer; color:#fff; font-size:18px; }
+  .fp-eraser-btn.sel { border-color:#ff6b6b; background:rgba(255,107,107,.2); }
+  .fp-sticker-btn { font-size:26px; background:rgba(255,255,255,.08); border:2px solid transparent; border-radius:10px; padding:4px 8px; cursor:pointer; flex-shrink:0; }
+  .fp-sticker-btn.sel { border-color:var(--gold); background:rgba(245,166,35,.2); }
+  .fp-bg-btn { width:42px; height:42px; border-radius:10px; cursor:pointer; border:3px solid transparent; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .fp-bg-btn.sel { border-color:#fff; box-shadow:0 0 10px rgba(255,255,255,.4); }
+  .fp-hint { font-size:11px; color:rgba(255,255,255,.4); text-align:center; margin-top:6px; }
+  .fp-sparkle { position:absolute; pointer-events:none; font-size:20px; animation:fpPop .6s ease forwards; }
+  @keyframes fpPop { 0%{transform:scale(0);opacity:1} 60%{transform:scale(1.4);opacity:.9} 100%{transform:scale(.5);opacity:0} }
 </style>
 </head>
 <body>
@@ -263,6 +296,7 @@
   </div>
   <div class="home-buttons">
     <button class="btn btn-primary" onclick="showScreen('theme-select')">▶ Play Now</button>
+    <button class="btn btn-secondary" style="background:linear-gradient(135deg,rgba(76,175,80,.25),rgba(156,39,176,.25));border-color:rgba(255,255,255,.3)" onclick="showScreen('freeplay')">🎨 Build &amp; Play</button>
     <button class="btn btn-secondary" onclick="showScreen('how-to-play')">📖 How to Play</button>
   </div>
 </div>
@@ -461,6 +495,44 @@
   <div class="screen-title" style="margin-top:50px">🏆 Trophy Shelf</div>
   <div class="screen-sub">Earn badges by playing!</div>
   <div class="badge-grid" id="badge-grid"></div>
+</div>
+
+<!-- FREE PLAY -->
+<div id="freeplay" class="screen" style="background:#0d0d2b">
+  <div class="fp-topbar">
+    <button class="fp-icon-btn" onclick="showScreen('home')">🏠</button>
+    <div class="fp-title">🎨 Build &amp; Play</div>
+    <div style="display:flex;gap:6px">
+      <button class="fp-icon-btn" id="fp-undo-btn" onclick="fpUndo()" title="Undo">↩</button>
+      <button class="fp-icon-btn" onclick="fpClear()" title="Clear all">🗑</button>
+      <button class="fp-icon-btn" onclick="fpSave()" title="Save picture">⬇️</button>
+    </div>
+  </div>
+  <div class="fp-canvas-wrap" id="fp-canvas-wrap">
+    <canvas id="fp-canvas"></canvas>
+  </div>
+  <div class="fp-bottom">
+    <div class="fp-tabs">
+      <button class="fp-tab active" onclick="fpTab('paint',this)">🖌 Paint</button>
+      <button class="fp-tab" onclick="fpTab('stamps',this)">🎭 Stamps</button>
+      <button class="fp-tab" onclick="fpTab('bg',this)">🌌 Scene</button>
+    </div>
+    <div id="fp-panel-paint" class="fp-panel active">
+      <div class="fp-scroll-row" id="fp-color-row"></div>
+      <div class="fp-scroll-row" style="margin-top:8px" id="fp-shape-row"></div>
+      <div class="fp-sizes" id="fp-size-row">
+        <span style="font-size:11px;color:rgba(255,255,255,.4);flex-shrink:0">Size:</span>
+      </div>
+    </div>
+    <div id="fp-panel-stamps" class="fp-panel">
+      <div class="fp-scroll-row" id="fp-sticker-row"></div>
+      <div class="fp-hint">Tap anywhere on the canvas to place a stamp!</div>
+    </div>
+    <div id="fp-panel-bg" class="fp-panel">
+      <div class="fp-scroll-row" id="fp-bg-row"></div>
+      <div class="fp-hint">Choose a scene for your drawing</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -962,6 +1034,7 @@ function showScreen(id){
   if(id==='home'){updateHomeHighScore();updateDailyBtn();startBgMusic();}
   if(id==='trophies')renderTrophies();
   if(id==='map')renderMap();
+  if(id==='freeplay')initFP();
 }
 function selectTheme(t){
   gameState.theme=t;
@@ -1331,6 +1404,333 @@ function saveScoreCard(){
   cx.fillStyle='rgba(255,255,255,.35)';cx.font='11px sans-serif';cx.fillText('math.ryst.in',200,200);
   // Download
   const a=document.createElement('a');a.download='scorecard.png';a.href=c.toDataURL('image/png');a.click();
+}
+
+// ===== FREE PLAY =====
+const FP_COLORS=['#ff6b6b','#ff9f43','#ffd32a','#a8e063','#4fc3f7','#a78bfa','#f472b6','#ffffff','#c8b4a0','#06d6a0','#70d6ff','#ffd166','#f4a261','#e63946','#9d4edd','#2d6a4f'];
+const FP_SHAPES=[
+  {id:'round',label:'⬤',title:'Circle'},
+  {id:'square',label:'■',title:'Square'},
+  {id:'diamond',label:'◆',title:'Diamond'},
+  {id:'star',label:'★',title:'Star'},
+  {id:'heart',label:'♥',title:'Heart'},
+  {id:'ring',label:'◯',title:'Ring'},
+  {id:'spray',label:'✦',title:'Spray'},
+];
+const FP_STICKERS=['🚀','⭐','🌈','🐠','🦋','🌸','🏠','🦄','🐙','🌊','❄️','🌙','🍄','🎪','🌺','🐬','🦀','🐡','☁️','🌴','🦖','🎡','🐧','🐸','🦊','🐰','🐼','🎈','🎀','🌟','🍉','🍦','🏖️','🌋','🔮','🪄','🏰','🌠','🎆','🌻'];
+const FP_BACKGROUNDS=[
+  {label:'🌌',color:'#0d0d2b',name:'Space'},
+  {label:'🌊',color:'#001a4d',name:'Ocean'},
+  {label:'🌳',color:'#0a1a0a',name:'Forest'},
+  {label:'☁️',color:'#87ceeb',name:'Sky'},
+  {label:'🌅',color:'#3d1c02',name:'Sunset'},
+  {label:'🍬',color:'#4a0030',name:'Candy'},
+  {label:'🌿',color:'#1b2a1b',name:'Garden'},
+  {label:'🏔️',color:'#1a1a2e',name:'Mountain'},
+  {label:'📄',color:'#fffde7',name:'Paper'},
+  {label:'🌸',color:'#3d0024',name:'Blossom'},
+];
+
+const fp={color:'#ff6b6b',shape:'round',size:22,sticker:null,eraser:false,bgColor:'#0d0d2b',bgLabel:'🌌',drawing:false,history:[],maxHistory:18,ready:false};
+
+function initFP(){
+  const canvas=document.getElementById('fp-canvas');
+  const wrap=document.getElementById('fp-canvas-wrap');
+  // Size canvas to fit
+  const W=Math.min(wrap.clientWidth||320,600);
+  const H=Math.min(wrap.clientHeight||400,700);
+  if(!fp.ready||canvas.width!==W||canvas.height!==H){
+    canvas.width=W; canvas.height=H;
+    canvas.style.background=fp.bgColor;
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    fp.history=[];
+    fpPushHistory();
+    fp.ready=true;
+  }
+  fpBuildUI();
+  // Pointer events (remove old listeners by cloning)
+  const nc=canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(nc,canvas);
+  const c=document.getElementById('fp-canvas');
+  c.addEventListener('pointerdown',fpDown);
+  c.addEventListener('pointermove',fpMove);
+  c.addEventListener('pointerup',fpUp);
+  c.addEventListener('pointercancel',fpUp);
+  c.addEventListener('click',fpClick);
+  document.getElementById('fp-undo-btn').disabled=fp.history.length<=1;
+}
+
+function fpBuildUI(){
+  // Colors
+  const cr=document.getElementById('fp-color-row');
+  cr.innerHTML='';
+  FP_COLORS.forEach(col=>{
+    const d=document.createElement('div');
+    d.className='fp-color-dot'+(col===fp.color&&!fp.eraser?' sel':'');
+    d.style.background=col;
+    if(col==='#ffffff')d.style.boxShadow='inset 0 0 0 1px rgba(0,0,0,.2)';
+    d.onclick=()=>{fp.color=col;fp.eraser=false;fp.sticker=null;fpBuildUI();};
+    cr.appendChild(d);
+  });
+  // Eraser
+  const er=document.createElement('div');
+  er.className='fp-eraser-btn'+(fp.eraser?' sel':'');
+  er.textContent='🧹';
+  er.title='Eraser';
+  er.onclick=()=>{fp.eraser=!fp.eraser;fp.sticker=null;fpBuildUI();};
+  cr.appendChild(er);
+
+  // Shapes
+  const sr=document.getElementById('fp-shape-row');
+  sr.innerHTML='';
+  FP_SHAPES.forEach(s=>{
+    const d=document.createElement('div');
+    d.className='fp-shape-btn'+(s.id===fp.shape&&!fp.eraser?' sel':'');
+    d.textContent=s.label; d.title=s.title;
+    d.onclick=()=>{fp.shape=s.id;fp.eraser=false;fp.sticker=null;fpBuildUI();};
+    sr.appendChild(d);
+  });
+
+  // Sizes
+  const szr=document.getElementById('fp-size-row');
+  szr.innerHTML='<span style="font-size:11px;color:rgba(255,255,255,.4);flex-shrink:0">Size:</span>';
+  [['S',10],['M',22],['L',38],['XL',58]].forEach(([lbl,sz])=>{
+    const d=document.createElement('div');
+    d.className='fp-size-btn'+(fp.size===sz?' sel':'');
+    d.textContent=lbl;
+    d.onclick=()=>{fp.size=sz;fpBuildUI();};
+    szr.appendChild(d);
+  });
+
+  // Stickers
+  const stkr=document.getElementById('fp-sticker-row');
+  stkr.innerHTML='';
+  FP_STICKERS.forEach(e=>{
+    const d=document.createElement('div');
+    d.className='fp-sticker-btn'+(fp.sticker===e?' sel':'');
+    d.textContent=e;
+    d.onclick=()=>{fp.sticker=e;fp.eraser=false;stkr.querySelectorAll('.fp-sticker-btn').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');};
+    stkr.appendChild(d);
+  });
+
+  // BG
+  const bgr=document.getElementById('fp-bg-row');
+  bgr.innerHTML='';
+  FP_BACKGROUNDS.forEach(bg=>{
+    const d=document.createElement('div');
+    d.className='fp-bg-btn'+(bg.color===fp.bgColor?' sel':'');
+    d.style.background=bg.color;
+    d.textContent=bg.label; d.title=bg.name;
+    d.onclick=()=>{fp.bgColor=bg.color;fp.bgLabel=bg.label;document.getElementById('fp-canvas').style.background=bg.color;bgr.querySelectorAll('.fp-bg-btn').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');fpDrawBgPattern(bg);};
+    bgr.appendChild(d);
+  });
+}
+
+function fpPushHistory(){
+  const c=document.getElementById('fp-canvas');
+  const ctx=c.getContext('2d');
+  fp.history.push(ctx.getImageData(0,0,c.width,c.height));
+  if(fp.history.length>fp.maxHistory)fp.history.shift();
+  const btn=document.getElementById('fp-undo-btn');
+  if(btn)btn.disabled=fp.history.length<=1;
+}
+
+function fpUndo(){
+  if(fp.history.length<=1)return;
+  fp.history.pop();
+  const c=document.getElementById('fp-canvas');
+  c.getContext('2d').putImageData(fp.history[fp.history.length-1],0,0);
+  const btn=document.getElementById('fp-undo-btn');
+  if(btn)btn.disabled=fp.history.length<=1;
+}
+
+function fpClear(){
+  const c=document.getElementById('fp-canvas');
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  fp.history=[];
+  fpPushHistory();
+  fpDrawBgPattern(FP_BACKGROUNDS.find(b=>b.color===fp.bgColor)||FP_BACKGROUNDS[0]);
+  showToast('Canvas cleared! 🌟');
+}
+
+function fpDrawBgPattern(bg){
+  const c=document.getElementById('fp-canvas');
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  c.style.background=bg.color;
+  if(bg.name==='Space'||bg.name==='Ocean'||bg.name==='Mountain'){
+    // Subtle dots as stars/bubbles
+    ctx.save();
+    for(let i=0;i<60;i++){
+      const x=Math.random()*c.width,y=Math.random()*c.height,r=Math.random()*2+.5;
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle=bg.name==='Ocean'?'rgba(100,200,255,.25)':'rgba(255,255,255,.25)';
+      ctx.fill();
+    }
+    ctx.restore();
+  }else if(bg.name==='Sky'){
+    // Soft cloud blobs
+    ctx.save();ctx.fillStyle='rgba(255,255,255,.18)';
+    [[60,50],[200,80],[320,40],[150,160],[260,200]].forEach(([x,y])=>{
+      ctx.beginPath();ctx.arc(x,y,30,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(x+25,y-10,22,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(x-20,y+5,18,0,Math.PI*2);ctx.fill();
+    });
+    ctx.restore();
+  }else if(bg.name==='Garden'||bg.name==='Forest'){
+    // Grass blades at bottom
+    ctx.save();
+    for(let x=0;x<c.width;x+=6){
+      const h=15+Math.random()*20;
+      ctx.beginPath();ctx.moveTo(x,c.height);ctx.lineTo(x+3,c.height-h);ctx.lineTo(x+6,c.height);
+      ctx.fillStyle=`rgba(100,200,80,${.1+Math.random()*.08})`;ctx.fill();
+    }
+    ctx.restore();
+  }
+  fp.history=[];
+  fpPushHistory();
+}
+
+function fpGetPos(e){
+  const c=document.getElementById('fp-canvas');
+  const r=c.getBoundingClientRect();
+  const sx=c.width/r.width, sy=c.height/r.height;
+  return {x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy};
+}
+
+function fpDown(e){
+  e.preventDefault();
+  if(fp.sticker)return; // handled by click
+  fp.drawing=true;
+  fpApply(e);
+}
+function fpMove(e){
+  e.preventDefault();
+  if(!fp.drawing||fp.sticker)return;
+  fpApply(e);
+}
+function fpUp(e){
+  if(fp.drawing){fp.drawing=false;fpPushHistory();}
+}
+function fpClick(e){
+  if(!fp.sticker)return;
+  const {x,y}=fpGetPos(e);
+  const c=document.getElementById('fp-canvas');
+  const ctx=c.getContext('2d');
+  const sz=fp.size*2.2;
+  ctx.font=`${sz}px serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(fp.sticker,x,y);
+  fpPushHistory();
+  fpPlaySound(true);
+  fpSparkle(e.clientX,e.clientY);
+}
+
+function fpApply(e){
+  const {x,y}=fpGetPos(e);
+  const c=document.getElementById('fp-canvas');
+  const ctx=c.getContext('2d');
+  const s=fp.size;
+  ctx.save();
+  if(fp.eraser){
+    ctx.globalCompositeOperation='destination-out';
+    ctx.beginPath();ctx.arc(x,y,s,0,Math.PI*2);ctx.fill();
+    ctx.restore();return;
+  }
+  ctx.fillStyle=fp.color;ctx.strokeStyle=fp.color;
+  switch(fp.shape){
+    case 'round':
+      ctx.beginPath();ctx.arc(x,y,s/2,0,Math.PI*2);ctx.fill();break;
+    case 'square':
+      ctx.fillRect(x-s/2,y-s/2,s,s);break;
+    case 'diamond':
+      ctx.beginPath();ctx.moveTo(x,y-s/2);ctx.lineTo(x+s/2,y);ctx.lineTo(x,y+s/2);ctx.lineTo(x-s/2,y);
+      ctx.closePath();ctx.fill();break;
+    case 'star':
+      fpDrawStar(ctx,x,y,s/2,5);ctx.fill();break;
+    case 'heart':
+      fpDrawHeart(ctx,x,y,s/2);ctx.fill();break;
+    case 'ring':
+      ctx.lineWidth=Math.max(2,s/5);ctx.beginPath();ctx.arc(x,y,s/2,0,Math.PI*2);ctx.stroke();break;
+    case 'spray':
+      for(let i=0;i<12;i++){
+        const a=Math.random()*Math.PI*2,r=Math.random()*s;
+        const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;
+        ctx.globalAlpha=.4+Math.random()*.5;
+        ctx.beginPath();ctx.arc(px,py,1+Math.random()*2,0,Math.PI*2);ctx.fill();
+      }
+      break;
+  }
+  ctx.restore();
+  fpPlaySound(false);
+}
+
+function fpDrawStar(ctx,cx,cy,r,n){
+  ctx.beginPath();
+  for(let i=0;i<n*2;i++){
+    const a=(i*Math.PI/n)-Math.PI/2,rad=i%2===0?r:r*.4;
+    i===0?ctx.moveTo(cx+rad*Math.cos(a),cy+rad*Math.sin(a)):ctx.lineTo(cx+rad*Math.cos(a),cy+rad*Math.sin(a));
+  }ctx.closePath();
+}
+function fpDrawHeart(ctx,cx,cy,r){
+  ctx.beginPath();
+  ctx.moveTo(cx,cy+r*.25);
+  ctx.bezierCurveTo(cx,cy-r*.3,cx-r,cy-r*.3,cx-r,cy-r*.6);
+  ctx.bezierCurveTo(cx-r,cy-r*1.1,cx,cy-r,cx,cy-r*.5);
+  ctx.bezierCurveTo(cx,cy-r,cx+r,cy-r*1.1,cx+r,cy-r*.6);
+  ctx.bezierCurveTo(cx+r,cy-r*.3,cx,cy-r*.3,cx,cy+r*.25);
+  ctx.closePath();
+}
+
+function fpPlaySound(isStamp){
+  try{
+    const ac=getACtx();
+    const osc=ac.createOscillator(),gain=ac.createGain();
+    osc.connect(gain);gain.connect(ac.destination);
+    if(isStamp){
+      osc.frequency.setValueAtTime(600+Math.random()*300,ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(900+Math.random()*300,ac.currentTime+.08);
+      gain.gain.setValueAtTime(.12,ac.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.18);
+      osc.start(ac.currentTime);osc.stop(ac.currentTime+.2);
+    }else{
+      osc.frequency.setValueAtTime(300+Math.random()*200,ac.currentTime);
+      gain.gain.setValueAtTime(.04,ac.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.06);
+      osc.start(ac.currentTime);osc.stop(ac.currentTime+.07);
+    }
+  }catch(e){}
+}
+
+function fpSparkle(cx,cy){
+  const wrap=document.getElementById('fp-canvas-wrap');
+  ['✨','⭐','💫'].forEach((e,i)=>{
+    const d=document.createElement('div');
+    d.className='fp-sparkle'; d.textContent=e;
+    const r=wrap.getBoundingClientRect();
+    d.style.left=(cx-r.left+(-20+i*20))+'px';
+    d.style.top=(cy-r.top-10)+'px';
+    wrap.appendChild(d);
+    setTimeout(()=>d.remove(),700);
+  });
+}
+
+function fpSave(){
+  const orig=document.getElementById('fp-canvas');
+  const tmp=document.createElement('canvas');
+  tmp.width=orig.width;tmp.height=orig.height;
+  const ctx=tmp.getContext('2d');
+  ctx.fillStyle=fp.bgColor;ctx.fillRect(0,0,tmp.width,tmp.height);
+  ctx.drawImage(orig,0,0);
+  const a=document.createElement('a');a.download='my-masterpiece.png';a.href=tmp.toDataURL('image/png');a.click();
+  showToast('🎨 Masterpiece saved!','correct');
+}
+
+function fpTab(id,btn){
+  document.querySelectorAll('.fp-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.fp-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('fp-panel-'+id).classList.add('active');
 }
 
 // ===== KEYBOARD =====
